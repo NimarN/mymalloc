@@ -48,7 +48,9 @@ void  *mymalloc(size_t size, char *file, int line){
                 if (DEBUG) printf("%d\n", test);
                 if (DEBUG)printf("but it needs to be split\n");
                 //create new block of data, after the block that just got allocated
-                header *tmp = (header *)(ptr + HEADERSIZE + ptr->blockSize);
+                header *tmp = ptr++;
+                tmp = tmp + ptr->blockSize;
+                printf("%ld\n", HEADERSIZE + ptr->blockSize);
                 
                 tmp->inUse = 0;
                 tmp->blockSize = availableMem - (memNeeded + HEADERSIZE);
