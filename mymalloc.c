@@ -6,11 +6,9 @@
 #define MEMLENGTH 512
 #define BYTES 4096
 #define HEADERSIZE sizeof(header)
-#define EOM headstart + BYTES //EOM : "End of Memory";
-#define NEXTHEADER ptr + HEADERSIZE + ptr->blockSize
 
 #ifndef DEBUG 
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 
@@ -19,7 +17,7 @@
 static double memory[MEMLENGTH];
 
 
-void  *mymalloc(size_t size, char *file, int line){
+void  * mymalloc(size_t size, char *file, int line){
 
     //pointer to beginning of array 
     header *headstart = (header *) memory;
@@ -33,7 +31,7 @@ void  *mymalloc(size_t size, char *file, int line){
     
     int memNeeded = (size +7) & ~ 7;
     if (DEBUG) printf("Need %d bytes of mem\n\n", memNeeded);
-    for (header *ptr = headstart; ptr < EOM; ptr = NEXTHEADER){
+    for (header *ptr = headstart; ptr < headstart + ((BYTES) / sizeof(header)); ptr = ptr + (HEADERSIZE + ptr->blockSize)/sizeof(header)){
         //means currblock had enough free space
         int availableMem = ptr->blockSize;
         if (ptr->inUse == 0 && availableMem >= memNeeded){
@@ -41,6 +39,9 @@ void  *mymalloc(size_t size, char *file, int line){
             //initialize header
             ptr->inUse = 1;
             ptr->blockSize = memNeeded;
+            if (DEBUG) printf("Header for allocated block:\n");
+            if (DEBUG) printf("inUse: %d\n", ptr->inUse);
+            if (DEBUG) printf("blockSize: %d\n", ptr->blockSize);
 
             //check for splitting, minimum block size for split is 32 bytes
             if ((signed)(availableMem - (memNeeded+sizeof(header))) > 32){
@@ -48,17 +49,19 @@ void  *mymalloc(size_t size, char *file, int line){
                 if (DEBUG) printf("%d\n", test);
                 if (DEBUG)printf("but it needs to be split\n");
                 //create new block of data, after the block that just got allocated
-                header *tmp = ptr++;
-                tmp = tmp + ptr->blockSize;
-                printf("%ld\n", HEADERSIZE + ptr->blockSize);
+                header *tmp = ptr + 1;
+                tmp = tmp + (ptr->blockSize)/HEADERSIZE;
+                
                 
                 tmp->inUse = 0;
                 tmp->blockSize = availableMem - (memNeeded + HEADERSIZE);
                 if (DEBUG) printf("header is now initialized as %d  %d\n\n", tmp->inUse, tmp->blockSize);
                 if (DEBUG) printf("The block is now split, into two blocks with block one having %d bytes and block two having %d bytes\n\n", ptr->blockSize, tmp->blockSize);
+                
             }
             //return the addressof the avail memory block 
-            return ptr ++;
+            
+            return (ptr + 1);
         } 
     }
 
