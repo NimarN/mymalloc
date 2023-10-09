@@ -10,8 +10,8 @@ int main(int argc, char **argv){
     if (t==NULL){
         return 0;
     }
-    memset(t, 5, 1);
-    //*t = 5;
+    //memset(t, 5, 1);
+    *t = 5;
     
 
     printf("%d", *t);
