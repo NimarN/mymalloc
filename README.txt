@@ -9,6 +9,18 @@ Nimar Nasir nn286
 
 Project Design and Layout
 
+Heap/Memory design 
+
+    Layout:
+        
+        Our heap will be a static array of 512 doubles. Calls to malloc will allocate and free
+        memory from this array. 
+
+    Header Design and Layout:
+
+
+
+
 Malloc Function Implementation 
 
     void *mymalloc(size_t size, char *file, int line); (1)
@@ -25,6 +37,8 @@ Malloc Function Implementation
         store the client data will be used. If a suitable block is found, then a pointer to the 
         beginning of the payload is returned. If malloc fails, an error message will be printed and 
         NULL will be returned to the client. 
+
+        
         
 
 
