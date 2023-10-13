@@ -10,7 +10,7 @@
 #define EOM headstart + ((BYTES) / sizeof(header)) //EOM: "End of Memory" addreses of the last byte in memory
 
 #ifndef DEBUG 
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 
@@ -41,6 +41,7 @@ void  * mymalloc(size_t size, char *file, int line){
 
         //Calculates how much memory is in the current block
         int availableMem = ptr->blockSize;
+        
 
         //If there is free memory and, the chunk is large enough
         if (ptr->inUse == 0 && availableMem >= memNeeded){
@@ -72,3 +73,55 @@ void  * mymalloc(size_t size, char *file, int line){
     //If loop exits, this means there was not enough free space to allocate memory
     return NULL;
 }
+/*
+* The function @myFree  will deallocate the memory previosuly allocated by myMalloc()
+*
+*/
+
+void myfree(void *ptr, char *file, int line) {
+
+    if (ptr == NULL) {                                      // if pointer is Null, terminate the function
+        printf("Error: The pointer is null. File: %s, Line: %d\n", file, line);
+        return;
+    }
+
+
+    header *headstart= (header *) memory; // start address of memory array
+    header *prevHeader = NULL; // Creating a new header called previous header
+    
+    
+    
+    for (header* tmp = (header *) memory; tmp < EOM; tmp = tmp + (HEADERSIZE + tmp->blockSize)/sizeof(header)){
+        // this is a valid pointer we can continue to free
+        if ((char *) tmp + 8 == (char *) ptr){
+            
+            //make sure memory is not already freed
+            if (tmp->inUse == 0){
+                printf("Error: attempted to free a non allocated memory block. File: %s, Line: %d\n", file, line);
+                return;
+            }
+
+            //since memory is not in use we can mark as free
+            tmp->inUse = 0;
+
+            //get access to the next header
+            header *nextHeader = tmp + (HEADERSIZE + tmp->blockSize)/sizeof(header);
+            
+            //if nextheader exists, and is free, coalesce
+            if (nextHeader < EOM && nextHeader->inUse == 0){
+                tmp->blockSize = tmp->blockSize + nextHeader->blockSize + sizeof(header);
+            }
+
+            //if previous header is non-Null, and is free, coalesce
+            if (prevHeader && prevHeader->inUse==0){
+                prevHeader->blockSize += sizeof(header) + tmp->blockSize;      // Adding two blocks together
+            }    
+            return;
+        }
+
+        prevHeader = tmp;
+        
+    }
+    printf("Error: The pointer provided is invalid. File: %s, Line: %d\n", file, line);
+}
+

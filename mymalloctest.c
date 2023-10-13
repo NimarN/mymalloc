@@ -5,17 +5,32 @@
 #include "mymalloc.h"
 
 int main(int argc, char **argv){
-    
-    int *t = malloc(sizeof(int));
-    if (t==NULL){
+
+    char *a = malloc(2036);
+    if (a == NULL){
+        printf("malloc failed a");
         return 0;
     }
-    //memset(t, 5, 1);
-    *t = 5;
     
+    char *b = malloc(2036);
+    if (b == NULL){
+        printf("malloc failed b");
+        return 0;
+    } 
 
-    printf("%d", *t);
-   
+    free(a);
+    
+    free(a);
+    free(b);
+
+    char *p = malloc(4088);
+    if (p == NULL){
+        printf("malloc failed c");
+        return 0;
+    }
+    free(p);
+    
     return 1;
+
 
 }
