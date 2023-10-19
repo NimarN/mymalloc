@@ -21,28 +21,32 @@ static double memory[MEMLENGTH];
 
 void  * mymalloc(size_t size, char *file, int line){
 
+    if (size <= 0 || size > BYTES - sizeof(header)){
+        printf("Size Requested is invalid File: %s Line: %d \n", file, line);
+        return NULL;
+    }
+
     //pointer to beginning of memory array
     header *headstart = (header *) memory;
 
-    //if memory is currently all free, initalize the header
-    //set the current block to free and set size to the number of BYTES in the array 
-    //minus the space the header takes up.
+    //check to see if header has been initialized previously. 
+    //If all fields are 0, then this is the first call to malloc
     if (headstart->inUse == 0 && headstart->blockSize == 0){
+        
+        //set the current block to free 
         headstart->inUse = 0; 
+        //set size of current payload
         headstart->blockSize = BYTES - HEADERSIZE;
     }
     
-    //Round up the amount of memory the client needs to the 
-    //smalled multiple of 8 to maintain alignment
+    //Round up the amount of memory the client needs to the smallest multiple of 8 to maintain alignment
     int memNeeded = (size +7) & ~ 7;
-
     
     for (header *ptr = headstart; ptr < EOM; ptr = NEXTHEADER){
 
         //Calculates how much memory is in the current block
         int availableMem = ptr->blockSize;
         
-
         //If there is free memory and, the chunk is large enough
         if (ptr->inUse == 0 && availableMem >= memNeeded){
             
@@ -54,14 +58,13 @@ void  * mymalloc(size_t size, char *file, int line){
             //check for splitting, minimum block size for split is 32 bytes
             if ((signed)(availableMem - (memNeeded+sizeof(header))) > 32){
                 
-                //create the free block of data following the block that just got allocated for the client
-
                 //increment to the beginning of the allocated block
                 header *tmp = ptr + 1; 
 
                 //iterate to the end of the allocated block, this is where the new header will be for the free chunk
                 tmp = tmp + (ptr->blockSize)/HEADERSIZE; 
                 
+                //create the free block of data following the block that just got allocated for the client
                 tmp->inUse = 0;
                 tmp->blockSize = availableMem - (memNeeded + HEADERSIZE);
             }
@@ -69,18 +72,15 @@ void  * mymalloc(size_t size, char *file, int line){
             return (ptr + 1);
         } 
     }
-
+   
     //If loop exits, this means there was not enough free space to allocate memory
+    printf("ERROR: No free space avaialable, consider freeing memory. File: %s Line: %d \n", file, line);
     return NULL;
 }
-/*
-* The function @myFree  will deallocate the memory previosuly allocated by myMalloc()
-*
-*/
 
 void myfree(void *ptr, char *file, int line) {
 
-    if (ptr == NULL) {                                      // if pointer is Null, terminate the function
+    if (ptr == NULL) { // if pointer is Null, terminate the function
         printf("Error: The pointer is null. File: %s, Line: %d\n", file, line);
         return;
     }
@@ -97,7 +97,7 @@ void myfree(void *ptr, char *file, int line) {
             
             //make sure memory is not already freed
             if (tmp->inUse == 0){
-                printf("Error: attempted to free a non allocated memory block. File: %s, Line: %d\n", file, line);
+                printf("Error: Attempted to free a non allocated memory block. File: %s, Line: %d\n", file, line);
                 return;
             }
 
@@ -120,8 +120,9 @@ void myfree(void *ptr, char *file, int line) {
         }
 
         prevHeader = tmp;
-        
     }
+    
+    //if loop exits, this means the pointer provided was invalid
     printf("Error: The pointer provided is invalid. File: %s, Line: %d\n", file, line);
 }
 

@@ -5,82 +5,24 @@
 
 #define TEST_ITERATIONS 120
 
-void basicAllocFreeTest() {
+//Allocating and immedeatly freeing 1 byte of memory 120 times
+void allocFreeTest() {
     printf("Running basic alloc/free test...\n");
     
-    int *ptr = (int *) malloc(sizeof(int) * 10);
+    char *ptr = (char *) malloc(sizeof(char));
     if(ptr == NULL) {
         printf("Error: Couldn't allocate memory!\n");
         return;
     }
     
     free(ptr);
-    printf("Basic alloc/free test completed successfully.\n");
+    printf("Success! Basic alloc/free test completed successfully!\n");
+    return;
 }
 
-void oversizeAllocTest() {
-    printf("Running oversize alloc test...\n");
-    
-    char *ptr = (char *) malloc(4500);
-    if(ptr != NULL) {
-        printf("Error: Memory shouldn't have been allocated!\n");
-        free(ptr);
-    } else {
-        printf("Oversize alloc test completed successfully.\n");
-    }
-}
-
-void doubleFreeTest() {
-    printf("Running double free test...\n");
-    
-    char *ptr = (char *) malloc(100);
-    if(ptr == NULL) {
-        printf("Error: Couldn't allocate memory!\n");
-        return;
-    }
-    
-    free(ptr);
-    free(ptr);  // This should throw an error about freeing a non-allocated block
-    printf("Double free test completed. Check for errors.\n");
-}
-
-void randomAllocFreeTest() {
-    printf("Running random alloc/free test...\n");
-
-    char *ptrs[TEST_ITERATIONS] = {NULL};  // Initialize all pointers to NULL
-
-    for(int i = 0; i < TEST_ITERATIONS; i++) {
-        int choice = rand() % 2;  // Either 0 or 1
-
-        if(choice) {
-            // Try to allocate if not already allocated
-            if(!ptrs[i]) {
-                ptrs[i] = (char *) malloc(1);
-                if(!ptrs[i]) {
-                    printf("Error: Couldn't allocate memory!\n");
-                }
-            }
-        } else {
-            // Try to free if it's allocated
-            if(ptrs[i]) {
-                free(ptrs[i]);
-                ptrs[i] = NULL;
-            }
-        }
-    }
-
-    // Clean up any remaining allocations
-    for(int i = 0; i < TEST_ITERATIONS; i++) {
-        if(ptrs[i]) {
-            free(ptrs[i]);
-            ptrs[i] = NULL;
-        }
-    }
-
-    printf("Random alloc/free test completed.\n");
-}
-
-
+//fill and free test declares and defines an array of 120 bytes 
+//malloc will be called 120 times to get blocks of size 1 bytes
+//once objects are all allocated, all objects wll be freed 
 void fillAndFreeTest() {
     printf("Running fill and free test...\n");
 
@@ -89,7 +31,7 @@ void fillAndFreeTest() {
         ptrs[i] = (char *) malloc(1);
         if(!ptrs[i]) {
             printf("Error: Couldn't allocate memory!\n");
-            break;
+            return;
         }
     }
 
@@ -101,18 +43,208 @@ void fillAndFreeTest() {
         }
     }
 
-    printf("Fill and free test completed.\n");
+    printf("Success! Fill and free test completed.\n");
+    return;
 }
 
+// randomTest will declare an array of 120 pointers
+// the function will make random choices between allocating a 1- byte
+// object and adding a pointer to the array and deallocating a previously
+// allocated object until allocation occurs 120 times.
+void randomTest() {
+    printf("Running random alloc/free test...\n");
+
+    char *ptrs[TEST_ITERATIONS] = {NULL};  // Initialize all pointers to NULL
+    for(int i = 0; i < TEST_ITERATIONS; i++) {
+        int random = rand() % 2;  // Either 0 or 1
+
+        if(random) {
+            // Try to allocate if not already allocated
+            if(!ptrs[i]) {
+                ptrs[i] = (char *) malloc(1);
+                if(!ptrs[i]) {   // if block is null after allcoation, print error message
+                    printf("Error: Couldn't allocate memory!\n");
+                }
+            }
+        } else {
+            int j=0;
+            // Try to free if it's allocated
+            while(ptrs[j]){
+            if(ptrs[i]) {
+                free(ptrs[i]);
+                ptrs[i] = NULL;
+                break;
+            }
+            j++;
+        }
+        }
+    }
+
+    // Clean up any remaining allocations
+    for(int i = 0; i < TEST_ITERATIONS; i++) {
+        if(ptrs[i]) {
+            free(ptrs[i]);
+            ptrs[i] = NULL;
+        }
+    }
+
+    printf("Success! Random alloc/free test completed.\n");
+    return;
+}
+
+
+//allocate two large blocks of memory, free then allocate all memory and free
+void largeAllocAndFree(){
+
+    
+    char *a = malloc(2036);
+    if (a == NULL){
+        printf("Error: malloc failed!");
+        return;
+    }
+
+    char *b = malloc(2036);
+    if (b == NULL){
+        printf("Error: malloc failed !");
+        return;
+    }
+
+    free(a);
+    free(b);
+
+    char *c = malloc(4088);
+    if (c == NULL){
+        printf("Error: malloc failed! ");
+    }
+
+    free(c);
+
+    printf("Success! Large Alloc and Free test completed succesfully!");
+    return;
+
+    
+}
+
+
+void arrayWriteAlloc(){
+    int *nums = malloc(sizeof(int) * 20);
+
+    if (nums == NULL){
+        printf("Error: Malloc has failed\n");
+        return;
+    }
+
+    for (int i = 0; i < 20; i++){
+        nums[i] = i;
+    }
+
+    for (int i = 0; i < 20; i++){
+        
+        if (nums[i] != i){
+            printf("Error: objects are not properly written\n");
+            return;
+        }
+        
+    }
+
+    free(nums);
+    printf("Success! Array object was succesfully allocated and written to!");
+}
+
+
+
 int main() {
-    srand(time(NULL));  // Seed the random number generator
+    //run basicAllocFreeTest() 50 times in a row 
+    double avgTime = 0.0;
 
-    basicAllocFreeTest();
-    oversizeAllocTest();
-    doubleFreeTest();
-    randomAllocFreeTest();
-    fillAndFreeTest();
+    for (int i = 0; i < 50; i++){
+        //initialize clock 
+        clock_t time; 
+        time = clock();
 
-    // More test cases can be added as required
+        allocFreeTest();
+
+        //calculate time taken to execute task 
+        time = clock() - time ;
+        
+        double total_time = ((double) time) / CLOCKS_PER_SEC;
+        avgTime += total_time;
+        printf("allocFreeTest() executed in %f seconds\n", total_time);
+
+
+    }
+
+
+    printf("Average execution for allocFreeTest() is %f seconds\n\n", avgTime/50);
+    
+
+    avgTime = 0.0;
+    for (int i = 0; i < 50; i++){
+
+        clock_t time; 
+        time = clock();
+
+        randomTest();
+
+        time = clock() - time ;
+        
+        double total_time = ((double) time) / CLOCKS_PER_SEC;
+        avgTime += total_time;
+        printf("randomTest() executed in %f seconds\n", total_time);
+
+    }
+    printf("Average execution for randomTest() is %f seconds\n\n", avgTime/50);
+
+    avgTime = 0.0;
+    for (int i = 0; i < 50; i++){
+
+        clock_t time; 
+        time = clock();
+
+        fillAndFreeTest();
+
+        time = clock() - time ;
+        
+        double total_time = ((double) time) / CLOCKS_PER_SEC;
+        avgTime += total_time;
+        printf("fillAndFreeTest() executed in %f seconds\n", total_time);
+
+    }
+    printf("Average execution for fillAndFreeTest() is %f seconds\n\n", avgTime/50);
+    
+    avgTime = 0.0;
+    for (int i = 0; i < 50; i++){
+
+        clock_t time; 
+        time = clock();
+
+        largeAllocAndFree();
+
+        time = clock() - time ;
+        
+        double total_time = ((double) time) / CLOCKS_PER_SEC;
+        avgTime += total_time;
+        printf("largeAllocAndFree() executed in %f seconds\n", total_time);
+
+    }
+    printf("Average execution for largeAllocAndFree() is %f seconds\n\n", avgTime/50);
+
+    avgTime = 0.0;
+    for (int i = 0; i < 50; i++){
+
+        clock_t time; 
+        time = clock();
+
+        arrayWriteAlloc();
+
+        time = clock() - time ;
+        
+        double total_time = ((double) time) / CLOCKS_PER_SEC;
+        avgTime += total_time;
+        printf("arrayWriteAlloc() executed in %f seconds\n", total_time);
+
+    }
+    printf("Average execution for arrayWriteAlloc() is %f seconds\n\n", avgTime/50);
+
     return 0;
 }

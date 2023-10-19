@@ -4,8 +4,6 @@
 #define malloc(s) mymalloc(s, __FILE__, __LINE__)
 #define free(p) myfree(p, __FILE__, __LINE__)
 
- //pointer of type char*
- typedef char memPtr;
  typedef struct{
     int inUse;
     unsigned blockSize;
