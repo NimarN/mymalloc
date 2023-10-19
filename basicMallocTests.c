@@ -117,7 +117,7 @@ void basicStringTest(){
 
 int main(){
    
-   llTest();
+    llTest();
     binaryTreeTest();
     basicStringTest();
     return 1;
